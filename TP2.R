@@ -68,6 +68,7 @@ productos <- stream_in(productos)
 library(tm)
 library(stringi)
 library(stringr)
+library(arules)
 productos <- productos[,c(-1)]
 productos2 <- productos[,c(-4)]
 productos2<- data.frame(lapply(productos2,tolower))
@@ -89,16 +90,17 @@ productos2$nombre <- removeWords(productos2$nombre, present)
 marc <- unique(productos2$marca)
 productos2$nombre <- removeWords(productos2$nombre, marc)
 productos2$nombre <- removeWords(productos2$nombre, stopwords(kind = 'es'))
-library(arules)
-corp <- Corpus(VectorSource(productos2$nombre))
+productos2$first <- word(productos2$nombre, 1)
+corp <- Corpus(VectorSource(productos2$first))
 matr <-TermDocumentMatrix(corp)
 lista <- vector()
 for (i in 1:70) {
   freq <- findFreqTerms(matr, i)
   lista <- c(lista,length(freq))
 }
-freq <- findFreqTerms(matr, 12)
-bool <- productos2[,-3]
+plot(lista, type = 'l')
+freq <- findFreqTerms(matr, 10)
+bool <- productos[,-1]
 for (i in freq) {
   termino <-str_detect(productos2$nombre, i)
   termino[termino == T] = 'S'
@@ -123,4 +125,13 @@ for (i in 1:length(nombres)) {
   nombres[i] <- as.character(barrios$barrio[ubicacion[i]])
 }
 sucursales$barrio <- nombres
-write.csv(sucursales, 'sucursales_transformados.csv', row.names = F)
+sucursales <- data.frame(lapply(sucursales, as.character), stringsAsFactors=FALSE)
+sucursales2 <- sucursales[,c(-1,-3,-4,-5,-6,-8,-10,-11,-12,-13)]
+write.csv(sucursales2, 'sucursales_transformados.csv', row.names = F)
+# reglas de asociacion 
+sucursales <- read.csv('sucursales_transformados.csv')
+productos <- read.csv('productos_transformados.csv')
+precios <- read.csv('precios_transformados.csv')
+complete <- merge(precios, sucursales, by.x = "sucursal",  by.y = "id")
+complete <- merge(complete, productos, by.x = "producto",  by.y = "id")
+write.csv(complete, 'complete.csv', row.names = F)
