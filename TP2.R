@@ -93,12 +93,14 @@ productos2$nombre <- removeWords(productos2$nombre, stopwords(kind = 'es'))
 productos2$first <- word(productos2$nombre, 1)
 corp <- Corpus(VectorSource(productos2$first))
 matr <-TermDocumentMatrix(corp)
-lista <- vector()
-for (i in 1:70) {
+productos <- vector()
+frecuencia <- c(1:70)
+for (i in frecuencia) {
   freq <- findFreqTerms(matr, i)
-  lista <- c(lista,length(freq))
+  productos <- c(productos,length(freq))
 }
-plot(lista, type = 'l')
+
+plot(frecuencia,productos, type = 'l')
 freq <- findFreqTerms(matr, 10)
 bool <- productos[,-1]
 for (i in freq) {
@@ -135,3 +137,49 @@ precios <- read.csv('precios_transformados.csv')
 complete <- merge(precios, sucursales, by.x = "sucursal",  by.y = "id")
 complete <- merge(complete, productos, by.x = "producto",  by.y = "id")
 write.csv(complete, 'complete.csv', row.names = F)
+complete <-read.csv('complete.csv')
+complete <- data.frame(lapply(complete, as.character), stringsAsFactors=FALSE)
+complete2 <- complete[,-c(1,2,6,12,13)]
+complete3 <- complete[,c(6,11,14,15)]
+complete2 <- complete[,c(5,11,14,15)]
+complete4 <- complete[,-c(1,2,3,4,5,7,8,9,10,12,13,16,17,18)]
+complete5 <- complete[,c(7,14,15,17,18)]
+complete6 <- complete[,c(8,14,15,17,18)]
+complete7 <- complete[,c(9,14,15,17,18)]
+complete8 <- complete[,c(10,14,15,17,18)]
+library(readxl)
+zona=read.csv("Barrio-zona.xlsx")
+write.csv(zona, "Barrio-zona.xlsx", row.names = F)
+complete2 <- merge(complete2, zona, by=c("barrio"),all=F)
+complete2 <- complete2[,c(-1)]
+complete3 <- merge(complete3, zona, by=c("barrio"),all=F)
+complete3 <- complete3[,-1]
+complete4 <- merge(complete4, zona, by=c("barrio"),all=F)
+complete4 <- complete4[,-1]
+complete5 <- merge(complete5, zona, by=c("barrio"),all=F)
+complete6 <- merge(complete6, zona, by=c("barrio"),all=F)
+complete7 <- merge(complete7, zona, by=c("barrio"),all=F)
+complete8 <- merge(complete8, zona, by=c("barrio"),all=F)
+library(arules)
+library(rCBA)
+tran_complete <- as(complete2, "transactions")
+reglas <- apriori(tran_complete , parameter = list(support=0.01, confidence=0.01, target = "rules", minlen = 2))
+out <- cbind(labels = labels(reglas), quality(reglas))
+tran_complete2 <- as(complete3, "transactions")
+reglas2 <- apriori(tran_complete2 , parameter = list(support=0.01, confidence=0.01, target = "rules", minlen = 2))
+out2 <- cbind(labels = labels(reglas2), quality(reglas2))
+tran_complete3 <- as(complete4, "transactions")
+reglas3 <- apriori(tran_complete3 , parameter = list(support=0.01, confidence=0.01, target = "rules", minlen = 2))
+out3 <- cbind(labels = labels(reglas3), quality(reglas3))
+tran_complete4 <- as(complete5, "transactions")
+reglas4 <- apriori(tran_complete4 , parameter = list(support=0.01, confidence=0.01, target = "rules", minlen = 2))
+out4 <- cbind(labels = labels(reglas4), quality(reglas4))
+tran_complete5 <- as(complete6, "transactions")
+reglas5 <- apriori(tran_complete5 , parameter = list(support=0.01, confidence=0.01, target = "rules", minlen = 2))
+out5 <- cbind(labels = labels(reglas5), quality(reglas5))
+tran_complete6 <- as(complete7, "transactions")
+reglas6 <- apriori(tran_complete6 , parameter = list(support=0.01, confidence=0.01, target = "rules", minlen = 2))
+out6 <- cbind(labels = labels(reglas6), quality(reglas6))
+tran_complete7 <- as(complete8, "transactions")
+reglas7 <- apriori(tran_complete7 , parameter = list(support=0.01, confidence=0.01, target = "rules", minlen = 2))
+out7 <- cbind(labels = labels(reglas7), quality(reglas7))
